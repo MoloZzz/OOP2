@@ -18,6 +18,11 @@
 
 #include <Windows.h>
 
+#include<plog/Log.h>
+#include "plog/Initializers/RollingFileInitializer.h"
+
+
+
 
 
 

@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+using namespace std;
 
 
 
@@ -20,10 +21,26 @@ MainWindow::MainWindow(QWidget *parent)
 
     typeDate = "dd.MM.yyyy";
     typeTime = "hh:mm";
+
+    plog::init(plog::verbose,"C:\\Users\\user\\Documents\\GitHub\\OOP2\\plogBase.txt");
+
+    PLOG_VERBOSE << "PROGRAM OPENED";
+
+    /*
+    PLOG_VERBOSE << "verbose";
+    PLOG_DEBUG << "debug";
+    PLOG_INFO << "info";
+    PLOG_WARNING << "warning";
+    PLOG_ERROR << "error";
+    PLOG_FATAL << "fatal";
+    PLOG_NONE << "none";
+    */
+
 }
 
 MainWindow::~MainWindow()
 {
+    PLOG_VERBOSE << "PROGRAM CLOSED";
     delete ui;
 }
 
@@ -46,11 +63,17 @@ if(!mainList.empty()){
 int pos = 0;
 
 for(const timeT &child: mainList){
+
     if(child.date == date && child.time == time){
+    PLOG_DEBUG << "time and date = timeT";
 
         //2 variants timer and alarm
         if(child.type == "budilnik"){
+
+            PLOG_DEBUG << "timeT budilnik time";
             if(child.info != ""){
+
+              PLOG_DEBUG << "alarm budilnik with info,QMessageBox";
 
               MessageBeep(MB_ICONEXCLAMATION);
               QMessageBox::about(this,"Спрацював будильник!",child.info);
@@ -58,13 +81,17 @@ for(const timeT &child: mainList){
 
             }else{
 
+                PLOG_DEBUG << "alarm budilnik without info,QMessageBox";
                 MessageBeep(MB_ICONEXCLAMATION);
                 QMessageBox::about(this,"Спрацював будильник!","Спрацював будильник без опису");
 
             }
         }else if(child.type == "timer"){
+
+            PLOG_DEBUG << "timeT timer time";
             if(child.info != ""){
 
+              PLOG_DEBUG << "alarm timer with info,QMessageBox,tried to open file " + child.info;
               MessageBeep(MB_ICONEXCLAMATION);
 
               const char* STRopen = (child.info.toStdString()).c_str();
@@ -77,6 +104,7 @@ for(const timeT &child: mainList){
 
             }else{
 
+              PLOG_DEBUG << "alarm timer with info,QMessageBox";
               MessageBeep(MB_ICONEXCLAMATION);
               QMessageBox::about(this,"Спрацював таймер!","Час вичерпано!");
 
@@ -84,16 +112,19 @@ for(const timeT &child: mainList){
             }
 
         }else{
+            PLOG_WARNING << "error type";
             QMessageBox::warning(this,"Помилка типу","Помилка типу");
 
         }
 
 
+        PLOG_DEBUG << "erase timeT with this time";
         mainList.erase(mainList.begin() + pos);
 
 
         ui->listWidget->clear();
 
+        PLOG_DEBUG << "rewrite listWidget";
 
         QString outString;
         for(const timeT &print: mainList){
@@ -126,35 +157,11 @@ for(const timeT &child: mainList){
 
 
 
-/*
-void sortV(std::vector<timeT> &V){
-
-    if(V.size() <= 1){
-        return void();
-    }
-
-    int x = 0;
-    timeT tmp;
-    for (int i = V.size() - 1; i >= x; i--)
-    {
-        for (int j = V.size() - 1; j >= x; j--)    {
-            if ((V[j].date < V[j-1].date) || (V[j].date <= V[j-1].date || V[j].time < V[j-1].time))    {
-                tmp = V[j];
-                V[j] = V[j-1];
-                V[j-1] = tmp;
-            }
-
-        }
-     x++;
-    }
-
-
-}
-*/
 
 //add budilik
 void MainWindow::on_pushButton_clicked()
 {
+PLOG_INFO << "pressed button <add budilnik>";
 
 QDate Date = ui->calendarWidget->selectedDate();
 
@@ -173,6 +180,8 @@ if(( Date == QDate::currentDate() && Time > QTime::currentTime() ) || ( Date > Q
 
         if(child.date == Date && child.time == Time){
 
+            PLOG_ERROR << "Budilnik with same time alredy exist";
+
             QMessageBox::warning(this,"Помилка","Будильник з таким часом вже є");
 
             return void();
@@ -182,23 +191,32 @@ if(( Date == QDate::currentDate() && Time > QTime::currentTime() ) || ( Date > Q
 
     }
 
+    PLOG_DEBUG << "created class timeT, added to list mainList";
     timeT newNode(Time,Date,Info,Type);
 
     mainList.push_back(newNode);
 
 
 
+    PLOG_NONE << "QMessageBox that budilnik added";
     QMessageBox::about(this,"Додано успішно",Date.toString(typeDate) + " " + Time.toString(typeTime) + " " + Info + " " + "Будильник");
 
+
+    PLOG_NONE << "widget timeEdit set time curr, info line set void";
     ui->timeEdit->setTime(QTime::currentTime());
     ui->textEdit->setText("");
 
 
+
+    PLOG_NONE << "add budilnik string to listWidget";
     QString outString = Date.toString(typeDate) + " " + Time.toString(typeTime) + " " + " " + "Будильник " + Info;
 
     ui->listWidget->addItem(outString);
 
 }else{
+
+    PLOG_ERROR << "wrong enter,QMessageBox";
+    PLOG_NONE << "widget timeEdit set time curr, info line set void";
 
     ui->timeEdit->setTime(QTime::currentTime());
 
@@ -216,6 +234,8 @@ if(( Date == QDate::currentDate() && Time > QTime::currentTime() ) || ( Date > Q
 //add timer
 void MainWindow::on_pushButton_2_clicked()
 {
+    PLOG_INFO << "pressed button <add timer>";
+
     int h = ui->lineEdit->text().toInt();
 
     int m = ui->lineEdit_2->text().toInt();
@@ -226,6 +246,8 @@ void MainWindow::on_pushButton_2_clicked()
 
     if(( h <= 0 && m <= 0 && s <= 0 ) || h >= 24 || m >= 60 || s >= 60){
 
+        PLOG_ERROR << "wrong enter, time = 0 or more then can be";
+
         QMessageBox::warning(this,"Помилка","Некоректні дані!");
 
         return void();
@@ -233,6 +255,7 @@ void MainWindow::on_pushButton_2_clicked()
 
     if(h <= 0 && m <= 0 && s <= 4){
 
+    PLOG_ERROR << "wrong enter, time less then 4 seconds";
     QMessageBox::warning(this,"Помилка","Мінімальний час таймера - 5 секунд!");
 
     return void();
@@ -275,12 +298,16 @@ void MainWindow::on_pushButton_2_clicked()
             h = 0;
         }
 
+        PLOG_DEBUG << "changed sec,m,h to good format";
+
         const QString fileway = ui->lineEdit_4->text();
 
 
+        PLOG_DEBUG << "created class timeT, added to list mainList";
      mainList.push_back(timeT(QTime(resHour,resMinute,resSecond),resD,fileway,"timer"));
 
 
+     PLOG_NONE << "add timer string to listWidget 2 variants - with path to open or without";
       QString outString;
      if(fileway != "" || fileway != nullptr){
 
@@ -295,13 +322,16 @@ void MainWindow::on_pushButton_2_clicked()
 
      }
 
+    ui->listWidget->addItem(outString);
+
+    PLOG_NONE << "set timer widgets to basic";
     ui->lineEdit_4->setText("");
     ui->lineEdit->setText("0");
     ui->lineEdit_2->setText("0");
     ui->lineEdit_3->setText("0");
 
 
-    ui->listWidget->addItem(outString);
+
 
     }
 }
@@ -309,18 +339,21 @@ void MainWindow::on_pushButton_2_clicked()
 
 void MainWindow::on_radioButton_3_clicked()
 {
+    PLOG_INFO << "Pressed radiobutton hh:mm:ss";
     typeTime = "hh:mm:ss";
 }
 
 
 void MainWindow::on_radioButton_4_clicked()
 {
+    PLOG_INFO << "Pressed radiobutton hh:mm";
     typeTime = "hh:mm";
 }
 
 
 void MainWindow::on_radioButton_5_clicked()
 {
+    PLOG_INFO << "Pressed radiobutton HH.m.s";
     typeTime = "HH.m.s";
 }
 
